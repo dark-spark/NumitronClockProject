@@ -1,14 +1,38 @@
 #include <TimerOne.h>
 
-
-
 const int ledPin = 6;
-int s, s1, m, m1, h, h1;
+int s, s1, m, m1 = 5, h, h1 = 2;
 boolean stringComplete = false;
 String inputString;
 int latchPin = 43;
 int clockPin = 44;
 int dataPin = 45;
+byte digits[11] = {
+  246, 192, 174, 236, 216, 124, 126, 224, 254, 252, 1};
+int shiftRegisters = 2;
+int value[2];
+int ticker;
+int interrupt;
+boolean tick;
+
+void sendDigits(int *number, int registers, boolean comma) {
+  digitalWrite(latchPin, LOW);
+  for (int reg = 0; reg < registers; reg++) {
+    int digit = number[reg];
+    for (byte bitMask = 128; bitMask > 0; bitMask >>=1 ) {
+      digitalWrite(clockPin, LOW);
+      //    digitalWrite(dataPin, digits[digit] & bitMask ? HIGH : LOW);  //Holy crap that is a whole if else statement the same as the next 7 lines of code 
+      if(digits[digit] & bitMask) {
+        digitalWrite(dataPin, HIGH);
+      }
+      else {
+        digitalWrite(dataPin, LOW);
+      }
+      digitalWrite(clockPin, HIGH);
+    }
+  }
+  digitalWrite(latchPin, HIGH);
+}
 
 void setup() {
   Serial.begin(9600);
@@ -17,21 +41,35 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   Timer1.initialize(1000000);
-  Timer1.attachInterrupt(increment); // blinkLED to run every 0.15 seconds
-  
+  Timer1.attachInterrupt(increment);
+  ticker = millis();
+
   /*
   for (int j = 0; j < 99; j++) {
-    //ground latchPin and hold low for as long as you are transmitting
-    digitalWrite(latchPin, LOW);
-    shiftOut(dataPin, clockPin, LSBFIRST, j);
-    digitalWrite(latchPin, HIGH);
-    delay(1000);
+   digitalWrite(latchPin, LOW);
+   shiftOut(dataPin, clockPin, LSBFIRST, j);
+   digitalWrite(latchPin, HIGH);
+   delay(1000);
+   }
+   */
+}
+
+void formatArray() {
+  if (tick) {
+    value[0] = m;
+    value[1] = m1;
   }
-  */
+  else {
+    value[0] = h;
+    value[1] = h1;
+  }
 }
 
 void loop() {
-  
+  if (ticker - millis() > 5000) {
+    tick = tick ? false : true;
+    ticker = millis();
+  }
   while (Serial.available()) {
     char inChar = (char)Serial.read(); 
     if (inChar == '.') {
@@ -40,7 +78,7 @@ void loop() {
     }
     inputString += inChar;
   }
-  
+
   if(stringComplete) {
     s = inputString[5] - 48;
     s1 = inputString[4] - 48;
@@ -56,6 +94,8 @@ void loop() {
 void increment() {
   digitalWrite(ledPin, HIGH);
   count();
+  formatArray();
+  sendDigits(value, shiftRegisters, tick);
   updateDisplay();
   digitalWrite(ledPin, LOW);
 }
@@ -69,7 +109,6 @@ void updateDisplay() {
   Serial.print(":");
   Serial.print(s1);
   Serial.println(s);
-
 }
 
 void count() {
@@ -99,4 +138,8 @@ void count() {
     h1 = 0;
   }
 }
+
+
+
+
 
