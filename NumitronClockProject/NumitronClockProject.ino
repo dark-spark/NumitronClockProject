@@ -1,11 +1,11 @@
-#include <DS1307RTC.h>
-
 #include <LedControl.h>
 
 // inputs: DIN pin, CLK pin, LOAD pin. number of chips
 LedControl mydisplay = LedControl(45, 44, 43, 1);
 const int ledPin = 6;
 int s, s1, m, m1, h, h1;
+boolean stringComplete = false;
+String inputString;
 
 void setup() {
   Serial.begin(9600);
@@ -19,6 +19,24 @@ void loop() {
   delay(1000);
   count();
   updateDisplay();
+  while (Serial.available()) {
+    char inChar = (char)Serial.read(); 
+    if (inChar == '.') {
+      stringComplete = true;
+      break;
+    } 
+    inputString += inChar;
+  }
+  if(stringComplete) {
+    s = int(inputString[5]);
+    s1 = int(inputString[4]);
+    m = int(inputString[3]);
+    m1 = int(inputString[2]);
+    h = int(inputString[1]);
+    h1 = int(inputString[0]);
+    inputString = "";
+    stringComplete = false;  
+  }
 }
 
 void updateDisplay() {
@@ -32,9 +50,9 @@ void updateDisplay() {
   Serial.println(s);
   mydisplay.setDigit(0,0,s,false);
   mydisplay.setDigit(0,1,s1,false);
-  
-//  mydisplay.setDigit(0,2,h,false);
-//  mydisplay.setDigit(0,3,h1,false);
+
+  //  mydisplay.setDigit(0,2,h,false);
+  //  mydisplay.setDigit(0,3,h1,false);
 }
 
 void count() {
@@ -64,3 +82,4 @@ void count() {
     h1 = 0;
   }
 }
+
