@@ -1,3 +1,6 @@
+#include <TimerOne.h>
+
+
 
 const int ledPin = 6;
 int s, s1, m, m1, h, h1;
@@ -13,6 +16,8 @@ void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  Timer1.initialize(1000000);
+  Timer1.attachInterrupt(increment); // blinkLED to run every 0.15 seconds
   
   /*
   for (int j = 0; j < 99; j++) {
@@ -26,9 +31,7 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
-  count();
-  updateDisplay();
+  
   while (Serial.available()) {
     char inChar = (char)Serial.read(); 
     if (inChar == '.') {
@@ -37,6 +40,7 @@ void loop() {
     }
     inputString += inChar;
   }
+  
   if(stringComplete) {
     s = inputString[5] - 48;
     s1 = inputString[4] - 48;
@@ -46,7 +50,14 @@ void loop() {
     h1 = inputString[0] - 48;
     inputString = "";
     stringComplete = false;  
-  }
+  }  
+}
+
+void increment() {
+  digitalWrite(ledPin, HIGH);
+  count();
+  updateDisplay();
+  digitalWrite(ledPin, LOW);
 }
 
 void updateDisplay() {
