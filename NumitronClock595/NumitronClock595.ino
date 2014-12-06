@@ -1,4 +1,5 @@
 #include <TimerOne.h>
+#include <TimerThree.h>
 
 const int ledPin = 6;
 int s, s1, m, m1 = 5, h, h1 = 2;
@@ -21,13 +22,7 @@ void sendDigits(int *number, int registers, boolean comma) {
     int digit = number[reg];
     for (byte bitMask = 128; bitMask > 0; bitMask >>=1 ) {
       digitalWrite(clockPin, LOW);
-      //    digitalWrite(dataPin, digits[digit] & bitMask ? HIGH : LOW);  //Holy crap that is a whole if else statement the same as the next 7 lines of code 
-      if(digits[digit] & bitMask) {
-        digitalWrite(dataPin, HIGH);
-      }
-      else {
-        digitalWrite(dataPin, LOW);
-      }
+      digitalWrite(dataPin, digits[digit] & bitMask ? HIGH : LOW);
       digitalWrite(clockPin, HIGH);
     }
   }
@@ -42,7 +37,8 @@ void setup() {
   pinMode(dataPin, OUTPUT);
   Timer1.initialize(1000000);
   Timer1.attachInterrupt(increment);
-  ticker = millis();
+  Timer3.initialize(2000000);
+  Timer3.attachInterrupt(tickover);
 
   /*
   for (int j = 0; j < 99; j++) {
@@ -65,11 +61,9 @@ void formatArray() {
   }
 }
 
+void tickover() {tick = tick ? false : true;}
+
 void loop() {
-  if (ticker - millis() > 5000) {
-    tick = tick ? false : true;
-    ticker = millis();
-  }
   while (Serial.available()) {
     char inChar = (char)Serial.read(); 
     if (inChar == '.') {
