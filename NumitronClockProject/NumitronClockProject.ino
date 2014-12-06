@@ -1,3 +1,5 @@
+#include <DS1307RTC.h>
+
 #include <LedControl.h>
 
 // inputs: DIN pin, CLK pin, LOAD pin. number of chips
