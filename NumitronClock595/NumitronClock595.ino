@@ -2,7 +2,7 @@
 #include <TimerThree.h>
 
 const int ledPin = 6;
-int s, s1, m, m1 = 5, h, h1 = 2;
+int s, s1, m = 8, m1 = 1, h, h1 = 2;
 boolean stringComplete = false;
 String inputString;
 int latchPin = 43;
@@ -36,9 +36,9 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   Timer1.initialize(1000000);
-  Timer1.attachInterrupt(increment);
-  Timer3.initialize(2000000);
-  Timer3.attachInterrupt(tickover);
+  Timer1.attachInterrupt(count);
+  Timer3.initialize(1500000);
+  Timer3.attachInterrupt(increment);
 
   /*
   for (int j = 0; j < 99; j++) {
@@ -60,8 +60,6 @@ void formatArray() {
     value[1] = h1;
   }
 }
-
-void tickover() {tick = tick ? false : true;}
 
 void loop() {
   while (Serial.available()) {
@@ -87,7 +85,7 @@ void loop() {
 
 void increment() {
   digitalWrite(ledPin, HIGH);
-  count();
+  tick = tick ? false : true;
   formatArray();
   sendDigits(value, shiftRegisters, tick);
   updateDisplay();
