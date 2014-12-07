@@ -49,18 +49,29 @@ void setup() {
   attachInterrupt(6, count, RISING);
   Timer3.initialize(1500000);
   Timer3.attachInterrupt(increment);
-  
+
   bool parse=false;
   bool config=false;
-  
-  // get the date and time the compiler was run
-  if (getDate(__DATE__) && getTime(__TIME__)) {
-    parse = true;
-    // and configure the RTC with this info
-    if (RTC.write(tm)) {
-      config = true;
-    }
+
+  if (RTC.read(tm)) {
+    s= firstDigit(tm.Second);
+    s1= secondDigit(tm.Second);
+    m= firstDigit(tm.Minute);
+    m1= secondDigit(tm.Minute);
+    h= firstDigit(tm.Hour);
+    h1= secondDigit(tm.Hour);
   }
+
+  /*
+  // get the date and time the compiler was run
+   if (getDate(__DATE__) && getTime(__TIME__)) {
+   parse = true;
+   // and configure the RTC with this info
+   if (RTC.write(tm)) {
+   config = true;
+   }
+   }
+   */
 }
 
 void formatArray() {
@@ -75,7 +86,7 @@ void formatArray() {
 }
 
 void loop() {
-    while (Serial.available()) {
+  while (Serial.available()) {
     char inChar = (char)Serial.read(); 
     if (inChar == '.') {
       stringComplete = true;
@@ -85,39 +96,39 @@ void loop() {
   }
 
   if(stringComplete) {
-  if (RTC.read(tm)) {
-    Serial.print("Ok, Time = ");
-    print2digits(tm.Hour);
-    Serial.write(':');
-    print2digits(tm.Minute);
-    Serial.write(':');
-    print2digits(tm.Second);
-    Serial.print(", Date (D/M/Y) = ");
-    Serial.print(tm.Day);
-    Serial.write('/');
-    Serial.print(tm.Month);
-    Serial.write('/');
-    Serial.print(tmYearToCalendar(tm.Year));
-    Serial.println();
-    s= firstDigit(tm.Second);
-    s1= secondDigit(tm.Second);
-    m= firstDigit(tm.Minute);
-    m1= secondDigit(tm.Minute);
-    h= firstDigit(tm.Hour);
-    h1= secondDigit(tm.Hour);
-  }
+    if (RTC.read(tm)) {
+      Serial.print("Ok, Time = ");
+      print2digits(tm.Hour);
+      Serial.write(':');
+      print2digits(tm.Minute);
+      Serial.write(':');
+      print2digits(tm.Second);
+      Serial.print(", Date (D/M/Y) = ");
+      Serial.print(tm.Day);
+      Serial.write('/');
+      Serial.print(tm.Month);
+      Serial.write('/');
+      Serial.print(tmYearToCalendar(tm.Year));
+      Serial.println();
+      s= firstDigit(tm.Second);
+      s1= secondDigit(tm.Second);
+      m= firstDigit(tm.Minute);
+      m1= secondDigit(tm.Minute);
+      h= firstDigit(tm.Hour);
+      h1= secondDigit(tm.Hour);
+    }
     inputString = "";
     stringComplete = false;  
   }  
 }
 
 void increment() {
-//  digitalWrite(ledPin, HIGH);
+  //  digitalWrite(ledPin, HIGH);
   tick = tick ? false : true;
   formatArray();
   sendDigits(value, shiftRegisters, tick);
   updateDisplay();
-//  digitalWrite(ledPin, LOW);
+  //  digitalWrite(ledPin, LOW);
 }
 
 void print2digits(int number) {
@@ -136,7 +147,8 @@ int firstDigit(int number) {
 int secondDigit(int number) {
   if(number > 9) {
     return floor(number / 10);
-  } else {
+  } 
+  else {
     return 0;
   }
 }
@@ -207,6 +219,7 @@ bool getDate(const char *str)
   tm.Year = CalendarYrToTm(Year);
   return true;
 }
+
 
 
 
