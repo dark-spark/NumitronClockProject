@@ -13,8 +13,6 @@ int interruptPin = 42;
 int latchPin = 43;
 int clockPin = 44;
 int dataPin = 45;
-int analogPin = 41;
-int val;
 byte digits[11] = {
   246, 192, 174, 236, 216, 124, 126, 224, 254, 252, 1};
 int shiftRegisters = 2;
@@ -26,8 +24,15 @@ const char *monthName[12] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
+int val = 20;
+const int fanPin = 40;
+int pulseLength;
+int up = 12;
+int down = 13;
+boolean fetUp = false;
+boolean fetDown = false;
+int repTime = 100;
 
-Servo fan;
 tmElements_t tm;
 
 void sendDigits(int *number, int registers, boolean comma) {
@@ -50,12 +55,17 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   pinMode(interruptPin, INPUT_PULLUP);
-  attachInterrupt(6, count, RISING);
+  pinMode(up, INPUT_PULLUP);
+  pinMode(down, INPUT_PULLUP);
+  attachInterrupt(6, count, RISING); //Interrupt 6 is on pin 18 for teensy2.0++
+  Timer1.initialize(20000);
+  Timer1.attachInterrupt(pulse);
   Timer3.initialize(1500000);
   Timer3.attachInterrupt(increment);
 
   bool parse=false;
   bool config=false;
+  pulseLength = 0;
 
   if (RTC.read(tm)) {
     s= firstDigit(tm.Second);
@@ -65,8 +75,6 @@ void setup() {
     h= firstDigit(tm.Hour);
     h1= secondDigit(tm.Hour);
   }
-  
-  fan.attach(40);
 
   /*
   // get the date and time the compiler was run
@@ -92,14 +100,7 @@ void formatArray() {
 }
 
 void loop() {
-  
-  val = analogRead(analogPin); 
-  val = map(val, 0, 1023, 0, 180); 
-    fan.write(val); 
-    delay(100);
-  
-  
-    
+
   while (Serial.available()) {
     char inChar = (char)Serial.read(); 
     if (inChar == '.') {
@@ -134,6 +135,18 @@ void loop() {
     inputString = "";
     stringComplete = false;  
   }  
+
+  if(digitalRead(up) == LOW) {
+    val += 5;   
+    Serial.println(val);
+    delay(100);
+  }
+  if(digitalRead(down) == LOW) {
+    val -= 10;   
+    Serial.println(val);
+    delay(100);
+  }
+  pulseLength = 1000 + val;
 }
 
 void increment() {
@@ -234,6 +247,11 @@ bool getDate(const char *str)
   return true;
 }
 
+void pulse() {
+  digitalWrite(fanPin, HIGH);
+  delayMicroseconds(pulseLength);
+  digitalWrite(fanPin, LOW);
+}
 
 
 
