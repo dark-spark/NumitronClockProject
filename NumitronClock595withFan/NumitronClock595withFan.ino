@@ -13,6 +13,7 @@ int interruptPin = 42;
 int latchPin = 43;
 int clockPin = 44;
 int dataPin = 45;
+int relayPin = 39;
 byte digits[11] = {
   246, 192, 174, 236, 216, 124, 126, 224, 254, 252, 1};
 int shiftRegisters = 2;
@@ -24,7 +25,7 @@ const char *monthName[12] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
-int val = 20;
+int val = 10;
 const int fanPin = 40;
 int pulseLength;
 int up = 12;
@@ -54,6 +55,7 @@ void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  pinMode(relayPin, OUTPUT);
   pinMode(interruptPin, INPUT_PULLUP);
   pinMode(up, INPUT_PULLUP);
   pinMode(down, INPUT_PULLUP);
@@ -147,6 +149,12 @@ void loop() {
     delay(100);
   }
   pulseLength = 1000 + val;
+  
+  if(val > 15) {
+    digitalWrite(relayPin, HIGH);
+  } else {
+    digitalWrite(relayPin, LOW);  
+  }
 }
 
 void increment() {
