@@ -5,9 +5,6 @@
 #include <DS1307RTC.h>
 #include <Servo.h>
 #include <LedControl.h>
-#include <LiquidCrystal_I2C.h>
-
-LiquidCrystal_I2C lcd(0x38);  // Set the LCD I2C address
 
 // inputs: DIN pin, CLK pin, LOAD pin. number of chips
 LedControl mydisplay = LedControl(14, 16, 15, 1);
@@ -43,18 +40,6 @@ int repTime = 100;
 
 tmElements_t tm;
 
-// Creat a set of new characters
-const uint8_t charBitmap[][8] = {
-   { 0xc, 0x12, 0x12, 0xc, 0, 0, 0, 0 },
-   { 0x6, 0x9, 0x9, 0x6, 0, 0, 0, 0 },
-   { 0x0, 0x6, 0x9, 0x9, 0x6, 0, 0, 0x0 },
-   { 0x0, 0xc, 0x12, 0x12, 0xc, 0, 0, 0x0 },
-   { 0x0, 0x0, 0xc, 0x12, 0x12, 0xc, 0, 0x0 },
-   { 0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0, 0x0 },
-   { 0x0, 0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0 },
-   { 0x0, 0x0, 0x0, 0xc, 0x12, 0x12, 0xc, 0x0 }
-   
-};
 
 void sendDigits(int *number, int registers, boolean comma) {
   digitalWrite(latchPin, LOW);
@@ -123,20 +108,7 @@ void setup() {
    }
    }
    */
-   
-   
-  int charBitmapSize = (sizeof(charBitmap ) / sizeof (charBitmap[0]));
-  
-  lcd.begin(16,2);               // initialize the lcd 
 
-   for ( int i = 0; i < charBitmapSize; i++ )
-   {
-      lcd.createChar ( i, (uint8_t *)charBitmap[i] );
-   }
-     lcd.home ();                   // go home
-  lcd.print("Hello, ARDUINO ");  
-  lcd.setCursor ( 0, 1 );        // go to the next line
-  lcd.print (" FORUM - fm   ");
 }
 
 void formatArray() {
