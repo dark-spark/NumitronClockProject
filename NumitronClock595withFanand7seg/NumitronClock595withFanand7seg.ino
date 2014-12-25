@@ -7,7 +7,7 @@
 #include <LedControl.h>
 
 // inputs: DIN pin, CLK pin, LOAD pin. number of chips
-LedControl mydisplay = LedControl(14, 16, 15, 1);
+LedControl mydisplay = LedControl(14, 16, 15, 2);
 
 const int ledPin = 6;
 int s, s1, m = 8, m1 = 1, h, h1 = 2;
@@ -37,6 +37,8 @@ int down = 13;
 boolean fetUp = false;
 boolean fetDown = false;
 int repTime = 100;
+int pos = 0;
+int dir = 0;
 
 tmElements_t tm;
 
@@ -55,13 +57,23 @@ void sendDigits(int *number, int registers, boolean comma) {
 }
 
 void update7seg() {
+  mydisplay.clearDisplay(0);
+  mydisplay.clearDisplay(1);
   
-  mydisplay.setDigit(0,6,h1,false);
-  mydisplay.setDigit(0,5,h,true);
-  mydisplay.setDigit(0,4,m1,false);
-  mydisplay.setDigit(0,3,m,true);
-  mydisplay.setDigit(0,2,s1,false);
-  mydisplay.setDigit(0,1,s,false);
+  mydisplay.setDigit(0,5+pos-8,h1,false);
+  mydisplay.setDigit(0,4+pos-8,h,true);
+  mydisplay.setDigit(0,3+pos-8,m1,false);
+  mydisplay.setDigit(0,2+pos-8,m,true);
+  mydisplay.setDigit(0,1+pos-8,s1,false);
+  mydisplay.setDigit(0,0+pos-8,s,false);
+  
+  mydisplay.setDigit(1,5+pos,h1,false);
+  mydisplay.setDigit(1,4+pos,h,true);
+  mydisplay.setDigit(1,3+pos,m1,false);
+  mydisplay.setDigit(1,2+pos,m,true);
+  mydisplay.setDigit(1,1+pos,s1,false);
+  mydisplay.setDigit(1,0+pos,s,false);
+  
 }
 
 void setup() {
@@ -77,7 +89,7 @@ void setup() {
   attachInterrupt(6, count, RISING); //Interrupt 6 is on pin 18 for teensy2.0++
   Timer1.initialize(20000);
   Timer1.attachInterrupt(pulse);
-  Timer3.initialize(1500000);
+  Timer3.initialize(1000000);
   Timer3.attachInterrupt(increment);
 
   bool parse=false;
@@ -93,11 +105,11 @@ void setup() {
     h1= secondDigit(tm.Hour);
   }
  
-  
-  mydisplay.shutdown(0, false);  // turns on max7219
-  mydisplay.setIntensity(0, 1); // 15 = brightest
-  mydisplay.setScanLimit(0, 7);
-
+  for(int address=0;address<mydisplay.getDeviceCount();address++) {
+    mydisplay.shutdown(address,false);
+    mydisplay.setIntensity(address,8);
+    mydisplay.clearDisplay(address);
+  }
 /*
   // get the date and time the compiler was run
    if (getDate(__DATE__) && getTime(__TIME__)) {
@@ -185,6 +197,8 @@ void increment() {
   sendDigits(value, shiftRegisters, tick);
   updateDisplay();
   digitalWrite(ledPin, LOW);
+  update7seg();
+  bounce();
 }
 
 void print2digits(int number) {
@@ -247,7 +261,6 @@ void count() {
     h1 = 0;
   }
   
-  update7seg();
 }
 
 bool getTime(const char *str)
@@ -283,6 +296,17 @@ void pulse() {
   delayMicroseconds(pulseLength);
   digitalWrite(fanPin, LOW);
 }
+
+void bounce() {
+  if(pos > 9) {
+    dir = -1;
+  }
+  if(pos < 1) {
+    dir = 1;
+  }
+  pos += dir;
+}
+  
 
 
 
